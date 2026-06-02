@@ -99,7 +99,7 @@ struct InteractionControls: View {
                         get: { interaction.zoomLevel },
                         set: { project.updateInteraction(id: interaction.id, zoomLevel: $0) }
                     ),
-                    in: 0...2
+                    in: 1.0...3.0  // 100% to 300%
                 )
                 .frame(width: 120)
 
@@ -155,9 +155,25 @@ struct InteractionControls: View {
                 .frame(height: 20)
                 .background(Color(hex: "404040"))
 
-            Text("Transition 0.4s ease")
-                .font(.system(size: 12))
-                .foregroundColor(Color(hex: "555555"))
+            HStack(spacing: 8) {
+                Text("Transition")
+                    .font(.system(size: 12))
+                    .foregroundColor(Color(hex: "888888"))
+
+                Slider(
+                    value: Binding(
+                        get: { interaction.transitionDuration },
+                        set: { project.updateInteraction(id: interaction.id, transitionDuration: $0) }
+                    ),
+                    in: 0.4...1.5
+                )
+                .frame(width: 80)
+
+                Text(String(format: "%.1fs", interaction.transitionDuration))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color(hex: "F0F0F0"))
+                    .frame(width: 35, alignment: .trailing)
+            }
 
             Spacer()
         }

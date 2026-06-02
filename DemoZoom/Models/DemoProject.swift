@@ -25,7 +25,7 @@ class DemoProject: ObservableObject {
         let newInteraction = InteractionPoint(
             timestamp: time,
             position: position,
-            zoomLevel: 1.0,
+            zoomLevel: 2.0,  // Default 200% zoom
             frameSize: videoSize
         )
 
@@ -34,15 +34,19 @@ class DemoProject: ObservableObject {
         selectedInteractionID = newInteraction.id
     }
 
-    func updateInteraction(id: UUID, zoomLevel: Double? = nil, frameSize: CGSize? = nil) {
+    func updateInteraction(id: UUID, zoomLevel: Double? = nil, frameSize: CGSize? = nil, transitionDuration: Double? = nil) {
         guard let index = interactions.firstIndex(where: { $0.id == id }) else { return }
 
         if let zoomLevel = zoomLevel {
-            interactions[index].zoomLevel = max(0.0, min(2.0, zoomLevel))
+            interactions[index].zoomLevel = max(1.0, min(3.0, zoomLevel))  // 100% to 300%
         }
 
         if let frameSize = frameSize {
             interactions[index].frameSize = frameSize
+        }
+
+        if let transitionDuration = transitionDuration {
+            interactions[index].transitionDuration = max(0.4, min(1.5, transitionDuration))
         }
     }
 
