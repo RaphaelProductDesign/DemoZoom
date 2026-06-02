@@ -64,6 +64,48 @@ struct ContentView: View {
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(Color(hex: "F0F0F0"))
 
+            if project.videoURL != nil {
+                Divider()
+                    .frame(height: 20)
+                    .background(Color(hex: "404040"))
+
+                HStack(spacing: 6) {
+                    Text("Frame")
+                        .font(.system(size: 11))
+                        .foregroundColor(Color(hex: "888888"))
+
+                    TextField("W", value: Binding(
+                        get: { Int(project.defaultFrameSize.width) },
+                        set: { project.defaultFrameSize.width = CGFloat($0) }
+                    ), formatter: NumberFormatter())
+                    .textFieldStyle(.plain)
+                    .frame(width: 45)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Color(hex: "2C2C2C"))
+                    .cornerRadius(4)
+                    .foregroundColor(Color(hex: "F0F0F0"))
+                    .font(.system(size: 11, design: .monospaced))
+
+                    Text("×")
+                        .font(.system(size: 11))
+                        .foregroundColor(Color(hex: "555555"))
+
+                    TextField("H", value: Binding(
+                        get: { Int(project.defaultFrameSize.height) },
+                        set: { project.defaultFrameSize.height = CGFloat($0) }
+                    ), formatter: NumberFormatter())
+                    .textFieldStyle(.plain)
+                    .frame(width: 45)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(Color(hex: "2C2C2C"))
+                    .cornerRadius(4)
+                    .foregroundColor(Color(hex: "F0F0F0"))
+                    .font(.system(size: 11, design: .monospaced))
+                }
+            }
+
             Spacer()
 
             if recorder.isRecording {

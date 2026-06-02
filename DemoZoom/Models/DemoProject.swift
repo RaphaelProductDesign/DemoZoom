@@ -10,6 +10,7 @@ class DemoProject: ObservableObject {
     @Published var currentTime: CMTime = .zero
     @Published var selectedInteractionID: UUID?
     @Published var isPlaying: Bool = false
+    @Published var defaultFrameSize: CGSize = .zero  // Default frame size for new keyframes
 
     var canAddInteraction: Bool {
         interactions.count < 10
@@ -27,7 +28,7 @@ class DemoProject: ObservableObject {
             timestamp: time,
             position: position,
             zoomLevel: 2.0,  // Default 200% zoom
-            frameSize: videoSize
+            frameSize: defaultFrameSize.width > 0 ? defaultFrameSize : videoSize
         )
 
         interactions.append(newInteraction)
@@ -72,6 +73,7 @@ class DemoProject: ObservableObject {
             self.videoURL = url
             self.videoDuration = duration
             self.videoSize = naturalSize
+            self.defaultFrameSize = naturalSize  // Initialize with video size
             self.interactions = []
             self.currentTime = .zero
             self.selectedInteractionID = nil
