@@ -2,7 +2,7 @@ import Foundation
 import AVFoundation
 import CoreGraphics
 
-struct InteractionPoint: Identifiable, Codable {
+struct InteractionPoint: Identifiable, Codable, Equatable {
     let id: UUID
     var timestamp: CMTime
     var position: CGPoint
@@ -50,5 +50,14 @@ struct InteractionPoint: Identifiable, Codable {
         try container.encode(zoomLevel, forKey: .zoomLevel)
         try container.encode(frameSize, forKey: .frameSize)
         try container.encode(transitionDuration, forKey: .transitionDuration)
+    }
+
+    static func == (lhs: InteractionPoint, rhs: InteractionPoint) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.timestamp.seconds == rhs.timestamp.seconds &&
+        lhs.position == rhs.position &&
+        lhs.zoomLevel == rhs.zoomLevel &&
+        lhs.frameSize == rhs.frameSize &&
+        lhs.transitionDuration == rhs.transitionDuration
     }
 }

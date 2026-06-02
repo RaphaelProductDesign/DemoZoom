@@ -52,6 +52,9 @@ struct VideoEditorView: View {
             displayLink?.invalidate()
             NotificationCenter.default.removeObserver(self)
         }
+        .onChange(of: project.interactions) { _ in
+            updateComposition()
+        }
     }
 
     private func setupNotifications() {
@@ -110,6 +113,36 @@ struct VideoEditorView: View {
         let newPlayer = AVPlayer(playerItem: playerItem)
         newPlayer.volume = 0
         self.player = newPlayer
+
+        // Apply live composition for zoom preview
+        updateComposition()
+    }
+
+    private func updateComposition() {
+        guard let url = project.videoURL,
+              let playerItem = player?.currentItem,
+              !project.interactions.isEmpty else {
+            return
+        }
+
+        Task {
+            let asset = AVAsset(url: url)
+            let processor = VideoProcessor()
+
+            do {
+                let composition = try await processor.generateComposition(
+                    for: asset,
+                    interactions: project.interactions,
+                    videoSize: project.videoSize
+                )
+
+                await MainActor.run {
+                    playerItem.videoComposition = composition
+                }
+            } catch {
+                print("Failed to generate composition: \(error)")
+            }
+        }
     }
 
     private func setupDisplayLink() {

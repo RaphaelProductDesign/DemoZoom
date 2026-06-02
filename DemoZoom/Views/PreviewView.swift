@@ -49,6 +49,17 @@ struct PreviewView: View {
                         .background(Color.black)
                         .onAppear {
                             player.seek(to: .zero)
+                            player.play()
+
+                            // Loop playback
+                            NotificationCenter.default.addObserver(
+                                forName: .AVPlayerItemDidPlayToEndTime,
+                                object: player.currentItem,
+                                queue: .main
+                            ) { _ in
+                                player.seek(to: .zero)
+                                player.play()
+                            }
                         }
                 }
             }
