@@ -46,9 +46,39 @@ struct VideoEditorView: View {
         .onAppear {
             setupPlayer()
             setupDisplayLink()
+            setupNotifications()
         }
         .onDisappear {
             displayLink?.invalidate()
+            NotificationCenter.default.removeObserver(self)
+        }
+    }
+
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("PlayVideo"),
+            object: nil,
+            queue: .main
+        ) { [weak player] _ in
+            player?.play()
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("PauseVideo"),
+            object: nil,
+            queue: .main
+        ) { [weak player] _ in
+            player?.pause()
+        }
+
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name("SeekPlayer"),
+            object: nil,
+            queue: .main
+        ) { [weak player] notification in
+            if let time = notification.object as? CMTime {
+                player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
+            }
         }
     }
 
@@ -85,11 +115,19 @@ struct VideoEditorView: View {
     private func setupDisplayLink() {
         displayLink = DisplayLink { [weak player] in
             guard let player = player else { return }
-            let currentTime = player.currentTime()
-            if currentTime != project.currentTime {
-                project.currentTime = currentTime
+            let playerTime = player.currentTime()
+
+            // Only update if the difference is significant (not caused by seeking)
+            if abs(playerTime.seconds - project.currentTime.seconds) > 0.1 {
+                DispatchQueue.main.async {
+                    project.currentTime = playerTime
+                }
             }
         }
+    }
+
+    func seekPlayer(to time: CMTime) {
+        player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
     }
 
     private func calculateVideoFrame(in containerSize: CGSize) -> CGRect {

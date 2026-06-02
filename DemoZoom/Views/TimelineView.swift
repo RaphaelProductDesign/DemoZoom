@@ -7,8 +7,36 @@ struct TimelineView: View {
     @State private var draggingKeyframeID: UUID?
     @State private var dragOffset: CGFloat = 0
 
+    // Reference to player from environment
+    @State private var videoEditorView: VideoEditorView?
+
     var body: some View {
         VStack(spacing: 12) {
+            // Playback controls
+            HStack(spacing: 16) {
+                Button(action: togglePlayPause) {
+                    Image(systemName: project.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(hex: "F0F0F0"))
+                        .frame(width: 32, height: 32)
+                        .background(Color(hex: "2C2C2C"))
+                        .cornerRadius(6)
+                }
+                .buttonStyle(.plain)
+
+                Text(timeString(from: project.currentTime))
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundColor(Color(hex: "F0F0F0"))
+                    .frame(width: 80, alignment: .leading)
+
+                Spacer()
+
+                Text(timeString(from: project.videoDuration))
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundColor(Color(hex: "888888"))
+            }
+            .padding(.horizontal, 16)
+
             // Timeline track
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
@@ -75,13 +103,22 @@ struct TimelineView: View {
                         .gesture(
                             DragGesture(minimumDistance: 0)
                                 .onChanged { value in
-                                    isDraggingPlayhead = true
+                                    if !isDraggingPlayhead {
+                                        isDraggingPlayhead = true
+                                        project.isPlaying = false
+                                    }
                                     let progress = max(0, min(1, value.location.x / geometry.size.width))
                                     let newTime = CMTime(
                                         seconds: progress * project.videoDuration.seconds,
                                         preferredTimescale: 600
                                     )
                                     project.currentTime = newTime
+
+                                    // Notify VideoEditorView to seek player
+                                    NotificationCenter.default.post(
+                                        name: NSNotification.Name("SeekPlayer"),
+                                        object: newTime
+                                    )
                                 }
                                 .onEnded { _ in
                                     isDraggingPlayhead = false
@@ -105,20 +142,6 @@ struct TimelineView: View {
             .frame(height: 40)
             .padding(.horizontal, 16)
 
-            // Time labels
-            HStack {
-                Text(timeString(from: project.currentTime))
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundColor(Color(hex: "F0F0F0"))
-
-                Spacer()
-
-                Text(timeString(from: project.videoDuration))
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundColor(Color(hex: "888888"))
-            }
-            .padding(.horizontal, 16)
-
             // Keyframe controls (if selected)
             if let selected = project.selectedInteraction {
                 Divider()
@@ -131,6 +154,14 @@ struct TimelineView: View {
         }
         .padding(.vertical, 12)
         .background(Color(hex: "242424"))
+    }
+
+    private func togglePlayPause() {
+        project.isPlaying.toggle()
+        NotificationCenter.default.post(
+            name: NSNotification.Name(project.isPlaying ? "PlayVideo" : "PauseVideo"),
+            object: nil
+        )
     }
 
     private func xOffset(for time: CMTime, in width: CGFloat) -> CGFloat {

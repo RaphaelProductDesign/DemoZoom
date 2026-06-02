@@ -9,6 +9,7 @@ class DemoProject: ObservableObject {
     @Published var interactions: [InteractionPoint] = []
     @Published var currentTime: CMTime = .zero
     @Published var selectedInteractionID: UUID?
+    @Published var isPlaying: Bool = false
 
     var canAddInteraction: Bool {
         interactions.count < 10
