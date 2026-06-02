@@ -174,25 +174,20 @@ struct InteractionOverlay: View {
 
 class DisplayLink {
     private var displayLink: CVDisplayLink?
-    private let callback: () -> Void
+    private var timer: Timer?
 
     init(callback: @escaping () -> Void) {
-        self.callback = callback
-
-        CVDisplayLinkCreateWithActiveCGDisplays(&displayLink)
-
-        if let displayLink = displayLink {
-            CVDisplayLinkSetOutputCallback(displayLink, { (_, _, _, _, _, userInfo) -> CVReturn in
-                let callback = unsafeBitCast(userInfo, to: (() -> Void).self)
-                DispatchQueue.main.async { callback() }
-                return kCVReturnSuccess
-            }, unsafeBitCast(callback, to: UnsafeMutableRawPointer.self))
-
-            CVDisplayLinkStart(displayLink)
+        // Use Timer instead of CVDisplayLink to avoid unsafe pointer issues
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { _ in
+            callback()
         }
+        timer?.tolerance = 0.01
     }
 
     func invalidate() {
+        timer?.invalidate()
+        timer = nil
+
         if let displayLink = displayLink {
             CVDisplayLinkStop(displayLink)
         }
