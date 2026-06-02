@@ -23,8 +23,7 @@ struct ContentView: View {
             }
 
             if project.videoURL != nil {
-                controlsBar
-                    .frame(height: 100)
+                TimelineView(project: project)
             }
         }
         .background(Color(hex: "1A1A1A"))
@@ -141,22 +140,6 @@ struct ContentView: View {
         .background(Color(hex: "111111"))
     }
 
-    private var controlsBar: some View {
-        VStack(spacing: 8) {
-            Divider()
-                .background(Color(hex: "333333"))
-
-            VideoScrubber(project: project)
-                .padding(.horizontal, 16)
-
-            if let selected = project.selectedInteraction {
-                InteractionControls(project: project, interaction: selected)
-                    .padding(.horizontal, 16)
-            }
-        }
-        .padding(.vertical, 12)
-        .background(Color(hex: "242424"))
-    }
 }
 
 struct ToolbarButtonStyle: ButtonStyle {

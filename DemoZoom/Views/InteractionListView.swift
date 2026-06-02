@@ -96,14 +96,34 @@ struct InteractionRowView: View {
             Spacer()
 
             if isHovered {
-                Button(action: {
-                    project.removeInteraction(id: interaction.id)
-                }) {
-                    Image(systemName: "xmark.circle.fill")
+                Menu {
+                    Button(action: {
+                        project.currentTime = interaction.timestamp
+                        project.selectedInteractionID = interaction.id
+                    }) {
+                        Label("Go to Keyframe", systemImage: "arrow.right.circle")
+                    }
+
+                    Button(action: {
+                        duplicateInteraction()
+                    }) {
+                        Label("Duplicate", systemImage: "plus.square.on.square")
+                    }
+
+                    Divider()
+
+                    Button(role: .destructive, action: {
+                        project.removeInteraction(id: interaction.id)
+                    }) {
+                        Label("Delete", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle.fill")
                         .font(.system(size: 14))
                         .foregroundColor(Color(hex: "666666"))
                 }
-                .buttonStyle(.plain)
+                .menuStyle(.borderlessButton)
+                .frame(width: 20, height: 20)
             }
         }
         .padding(.horizontal, 10)
@@ -128,5 +148,18 @@ struct InteractionRowView: View {
         let secs = Int(seconds) % 60
         let tenths = Int((seconds.truncatingRemainder(dividingBy: 1)) * 10)
         return String(format: "%d:%02d.%d", mins, secs, tenths)
+    }
+
+    private func duplicateInteraction() {
+        let newInteraction = InteractionPoint(
+            timestamp: interaction.timestamp,
+            position: interaction.position,
+            zoomLevel: interaction.zoomLevel,
+            frameSize: interaction.frameSize,
+            transitionDuration: interaction.transitionDuration
+        )
+        project.interactions.append(newInteraction)
+        project.interactions.sort { $0.timestamp.seconds < $1.timestamp.seconds }
+        project.selectedInteractionID = newInteraction.id
     }
 }
