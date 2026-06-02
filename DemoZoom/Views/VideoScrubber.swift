@@ -118,9 +118,37 @@ struct InteractionControls: View {
                     .font(.system(size: 12))
                     .foregroundColor(Color(hex: "888888"))
 
-                Text("\(Int(interaction.frameSize.width))×\(Int(interaction.frameSize.height))")
-                    .font(.system(size: 12))
-                    .foregroundColor(Color(hex: "888888"))
+                HStack(spacing: 4) {
+                    TextField("W", value: Binding(
+                        get: { Int(interaction.frameSize.width) },
+                        set: { project.updateInteraction(id: interaction.id, frameSize: CGSize(width: CGFloat($0), height: interaction.frameSize.height)) }
+                    ), formatter: NumberFormatter())
+                    .textFieldStyle(.plain)
+                    .frame(width: 52)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+                    .background(Color(hex: "2C2C2C"))
+                    .cornerRadius(4)
+                    .foregroundColor(Color(hex: "F0F0F0"))
+                    .font(.system(size: 12, design: .monospaced))
+
+                    Text("×")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color(hex: "555555"))
+
+                    TextField("H", value: Binding(
+                        get: { Int(interaction.frameSize.height) },
+                        set: { project.updateInteraction(id: interaction.id, frameSize: CGSize(width: interaction.frameSize.width, height: CGFloat($0))) }
+                    ), formatter: NumberFormatter())
+                    .textFieldStyle(.plain)
+                    .frame(width: 52)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 4)
+                    .background(Color(hex: "2C2C2C"))
+                    .cornerRadius(4)
+                    .foregroundColor(Color(hex: "F0F0F0"))
+                    .font(.system(size: 12, design: .monospaced))
+                }
             }
 
             Divider()

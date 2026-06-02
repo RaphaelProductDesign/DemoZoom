@@ -112,20 +112,19 @@ class ZoomInstruction: NSObject, AVVideoCompositionInstructionProtocol {
         let normalizedT = (t - prevInteraction.timestamp.seconds) / duration
         let easedT = EasingFunctions.easeInOutCubic(normalizedT)
 
-        let zoom = EasingFunctions.lerp(from: prevInteraction.zoomLevel, to: nextInteraction.zoomLevel, t: easedT)
         let center = EasingFunctions.lerpPoint(from: prevInteraction.position, to: nextInteraction.position, t: easedT)
+        let frameSize = EasingFunctions.lerpSize(from: prevInteraction.frameSize, to: nextInteraction.frameSize, t: easedT)
 
-        return cropRect(for: center, zoom: zoom)
+        return cropRect(for: center, frameSize: frameSize)
     }
 
     private func cropRect(for interaction: InteractionPoint) -> CGRect {
-        return cropRect(for: interaction.position, zoom: interaction.zoomLevel)
+        return cropRect(for: interaction.position, frameSize: interaction.frameSize)
     }
 
-    private func cropRect(for center: CGPoint, zoom: Double) -> CGRect {
-        let actualZoom = max(0.5, zoom)
-        let visibleWidth = videoSize.width / actualZoom
-        let visibleHeight = videoSize.height / actualZoom
+    private func cropRect(for center: CGPoint, zoom: Double, frameSize: CGSize) -> CGRect {
+        let visibleWidth = frameSize.width
+        let visibleHeight = frameSize.height
 
         let centerX = center.x * videoSize.width
         let centerY = center.y * videoSize.height
@@ -137,5 +136,18 @@ class ZoomInstruction: NSObject, AVVideoCompositionInstructionProtocol {
         cropY = max(0, min(cropY, videoSize.height - visibleHeight))
 
         return CGRect(x: cropX, y: cropY, width: visibleWidth, height: visibleHeight)
+    }
+
+    private func cropRect(for center: CGPoint, frameSize: CGSize) -> CGRect {
+        let centerX = center.x * videoSize.width
+        let centerY = center.y * videoSize.height
+
+        var cropX = centerX - frameSize.width / 2
+        var cropY = centerY - frameSize.height / 2
+
+        cropX = max(0, min(cropX, videoSize.width - frameSize.width))
+        cropY = max(0, min(cropY, videoSize.height - frameSize.height))
+
+        return CGRect(x: cropX, y: cropY, width: frameSize.width, height: frameSize.height)
     }
 }

@@ -18,6 +18,15 @@ struct VideoEditorView: View {
                         VideoPlayerView(player: player)
                             .frame(width: videoFrame.width, height: videoFrame.height)
 
+                        if let selectedInteraction = project.selectedInteraction {
+                            CropFrameOverlay(
+                                interaction: selectedInteraction,
+                                videoSize: project.videoSize,
+                                containerSize: CGSize(width: videoFrame.width, height: videoFrame.height)
+                            )
+                            .frame(width: videoFrame.width, height: videoFrame.height)
+                        }
+
                         InteractionOverlay(
                             project: project,
                             videoSize: project.videoSize,
@@ -185,6 +194,58 @@ struct InteractionOverlay: View {
 
     private func index(of interaction: InteractionPoint) -> Int {
         project.interactions.firstIndex { $0.id == interaction.id } ?? 0
+    }
+}
+
+struct CropFrameOverlay: View {
+    let interaction: InteractionPoint
+    let videoSize: CGSize
+    let containerSize: CGSize
+
+    var body: some View {
+        GeometryReader { geometry in
+            let cropFrame = calculateCropFrame()
+
+            Rectangle()
+                .stroke(Color(hex: "0A84FF"), style: StrokeStyle(lineWidth: 2, dash: [8, 4]))
+                .frame(width: cropFrame.width, height: cropFrame.height)
+                .position(x: cropFrame.midX, y: cropFrame.midY)
+                .overlay(
+                    VStack {
+                        HStack {
+                            Text("\(Int(interaction.frameSize.width))×\(Int(interaction.frameSize.height))")
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color(hex: "0A84FF"))
+                                .cornerRadius(4)
+                            Spacer()
+                        }
+                        Spacer()
+                    }
+                    .frame(width: cropFrame.width, height: cropFrame.height)
+                    .position(x: cropFrame.midX, y: cropFrame.midY)
+                )
+        }
+    }
+
+    private func calculateCropFrame() -> CGRect {
+        let scaleX = containerSize.width / videoSize.width
+        let scaleY = containerSize.height / videoSize.height
+
+        let frameWidth = interaction.frameSize.width * scaleX
+        let frameHeight = interaction.frameSize.height * scaleY
+
+        let centerX = interaction.position.x * containerSize.width
+        let centerY = interaction.position.y * containerSize.height
+
+        return CGRect(
+            x: centerX - frameWidth / 2,
+            y: centerY - frameHeight / 2,
+            width: frameWidth,
+            height: frameHeight
+        )
     }
 }
 
