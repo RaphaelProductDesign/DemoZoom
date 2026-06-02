@@ -1,0 +1,33 @@
+# Xcode
+*.xcodeproj
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+/*.gcno
+**/xcshareddata/WorkspaceSettings.xcsettings
+
+# Build
+.build/
+Build/
+DerivedData/
+*.build/
+
+# Swift Package Manager
+.swiftpm/
+Packages/
+Package.resolved
+
+# CocoaPods
+Pods/
+*.podspec
+
+# macOS
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.mov
+*.mp4
+/tmp/
