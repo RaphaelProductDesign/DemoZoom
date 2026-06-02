@@ -44,9 +44,12 @@ struct PreviewView: View {
                             .foregroundColor(Color(hex: "888888"))
                     }
                 } else if let player = player {
-                    VideoPlayer(player: player)
+                    VideoPlayerView(player: player)
                         .aspectRatio(project.videoSize, contentMode: .fit)
                         .background(Color.black)
+                        .onAppear {
+                            player.seek(to: .zero)
+                        }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

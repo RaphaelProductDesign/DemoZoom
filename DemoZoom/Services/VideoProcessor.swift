@@ -15,7 +15,7 @@ class VideoProcessor {
 
         let duration = try await asset.load(.duration)
         let naturalSize = try await videoTrack.load(.naturalSize)
-        let transform = try await videoTrack.load(.preferredTransform)
+        let trackID = videoTrack.trackID
 
         let composition = AVMutableVideoComposition()
         composition.customVideoCompositorClass = ZoomCompositor.self
@@ -25,7 +25,8 @@ class VideoProcessor {
         let instruction = ZoomInstruction(
             timeRange: CMTimeRange(start: .zero, duration: duration),
             interactions: interactions,
-            videoSize: naturalSize
+            videoSize: naturalSize,
+            trackID: trackID
         )
 
         composition.instructions = [instruction]

@@ -66,11 +66,11 @@ class ZoomInstruction: NSObject, AVVideoCompositionInstructionProtocol {
     let requiredSourceTrackIDs: [NSValue]?
     let passthroughTrackID: CMPersistentTrackID = kCMPersistentTrackID_Invalid
 
-    init(timeRange: CMTimeRange, interactions: [InteractionPoint], videoSize: CGSize) {
+    init(timeRange: CMTimeRange, interactions: [InteractionPoint], videoSize: CGSize, trackID: CMPersistentTrackID) {
         self.timeRange = timeRange
         self.interactions = interactions.sorted { $0.timestamp.seconds < $1.timestamp.seconds }
         self.videoSize = videoSize
-        self.requiredSourceTrackIDs = nil
+        self.requiredSourceTrackIDs = [NSNumber(value: trackID)]
         super.init()
     }
 

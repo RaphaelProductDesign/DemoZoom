@@ -12,16 +12,24 @@ struct VideoEditorView: View {
                 gridBackground
 
                 if let player = player {
-                    VideoPlayerView(player: player)
-                        .aspectRatio(project.videoSize, contentMode: .fit)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .overlay(
-                            InteractionOverlay(project: project, videoSize: project.videoSize)
+                    let videoFrame = calculateVideoFrame(in: geometry.size)
+
+                    ZStack {
+                        VideoPlayerView(player: player)
+                            .frame(width: videoFrame.width, height: videoFrame.height)
+
+                        InteractionOverlay(
+                            project: project,
+                            videoSize: project.videoSize,
+                            containerSize: CGSize(width: videoFrame.width, height: videoFrame.height)
                         )
-                        .contentShape(Rectangle())
-                        .onTapGesture { location in
-                            handleTap(at: location, in: geometry.size)
-                        }
+                        .frame(width: videoFrame.width, height: videoFrame.height)
+                    }
+                    .position(x: videoFrame.midX, y: videoFrame.midY)
+                    .contentShape(Rectangle())
+                    .onTapGesture { location in
+                        handleTap(at: location, in: videoFrame)
+                    }
                 }
             }
         }
@@ -75,36 +83,43 @@ struct VideoEditorView: View {
         }
     }
 
-    private func handleTap(at location: CGPoint, in viewSize: CGSize) {
+    private func calculateVideoFrame(in containerSize: CGSize) -> CGRect {
         let aspectRatio = project.videoSize.width / project.videoSize.height
-        let viewAspectRatio = viewSize.width / viewSize.height
+        let containerAspectRatio = containerSize.width / containerSize.height
 
         var videoFrame: CGRect
 
-        if aspectRatio > viewAspectRatio {
-            let height = viewSize.width / aspectRatio
+        if aspectRatio > containerAspectRatio {
+            let height = containerSize.width / aspectRatio
             videoFrame = CGRect(
                 x: 0,
-                y: (viewSize.height - height) / 2,
-                width: viewSize.width,
+                y: (containerSize.height - height) / 2,
+                width: containerSize.width,
                 height: height
             )
         } else {
-            let width = viewSize.height * aspectRatio
+            let width = containerSize.height * aspectRatio
             videoFrame = CGRect(
-                x: (viewSize.width - width) / 2,
+                x: (containerSize.width - width) / 2,
                 y: 0,
                 width: width,
-                height: viewSize.height
+                height: containerSize.height
             )
         }
 
-        guard videoFrame.contains(location) else { return }
+        return videoFrame
+    }
 
-        let relativeX = (location.x - videoFrame.minX) / videoFrame.width
-        let relativeY = (location.y - videoFrame.minY) / videoFrame.height
+    private func handleTap(at location: CGPoint, in videoFrame: CGRect) {
+        // Tap is already within video frame bounds due to contentShape
+        let relativeX = location.x / videoFrame.width
+        let relativeY = location.y / videoFrame.height
 
-        let normalizedPosition = CGPoint(x: relativeX, y: relativeY)
+        // Clamp to 0-1 range
+        let normalizedPosition = CGPoint(
+            x: max(0, min(1, relativeX)),
+            y: max(0, min(1, relativeY))
+        )
 
         project.addInteraction(at: project.currentTime, position: normalizedPosition)
     }
@@ -127,11 +142,12 @@ struct VideoPlayerView: NSViewRepresentable {
 struct InteractionOverlay: View {
     @ObservedObject var project: DemoProject
     let videoSize: CGSize
+    let containerSize: CGSize
 
     var body: some View {
         GeometryReader { geometry in
             ForEach(project.interactions) { interaction in
-                let position = convertPosition(interaction.position, to: geometry.size)
+                let position = convertPosition(interaction.position, to: containerSize)
 
                 ZStack {
                     if interaction.id == project.selectedInteractionID {
