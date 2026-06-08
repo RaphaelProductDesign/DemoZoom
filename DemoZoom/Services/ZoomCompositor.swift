@@ -148,14 +148,13 @@ class ZoomInstruction: NSObject, AVVideoCompositionInstructionProtocol {
         let easedT = EasingFunctions.easeInOutCubic(normalizedT)
 
         let center = EasingFunctions.lerpPoint(from: prevInteraction.position, to: nextInteraction.position, t: easedT)
-        let frameSize = EasingFunctions.lerpSize(from: prevInteraction.frameSize, to: nextInteraction.frameSize, t: easedT)
         let zoom = EasingFunctions.lerp(from: prevInteraction.zoomLevel, to: nextInteraction.zoomLevel, t: easedT)
 
-        return cropRect(for: center, zoom: zoom, frameSize: frameSize)
+        return cropRect(for: center, zoom: zoom, frameSize: videoSize)
     }
 
     private func cropRect(for interaction: InteractionPoint) -> CGRect {
-        return cropRect(for: interaction.position, zoom: interaction.zoomLevel, frameSize: interaction.frameSize)
+        return cropRect(for: interaction.position, zoom: interaction.zoomLevel, frameSize: videoSize)
     }
 
     private func cropRect(for center: CGPoint, zoom: Double, frameSize: CGSize) -> CGRect {

@@ -22,7 +22,8 @@ struct VideoEditorView: View {
                             CropFrameOverlay(
                                 interaction: selectedInteraction,
                                 videoSize: project.videoSize,
-                                containerSize: CGSize(width: videoFrame.width, height: videoFrame.height)
+                                containerSize: CGSize(width: videoFrame.width, height: videoFrame.height),
+                                frameSize: project.defaultFrameSize
                             )
                             .frame(width: videoFrame.width, height: videoFrame.height)
                         }
@@ -272,6 +273,7 @@ struct CropFrameOverlay: View {
     let interaction: InteractionPoint
     let videoSize: CGSize
     let containerSize: CGSize
+    let frameSize: CGSize  // Global frame size
 
     var body: some View {
         GeometryReader { geometry in
@@ -284,7 +286,7 @@ struct CropFrameOverlay: View {
                 .overlay(
                     VStack {
                         HStack {
-                            Text("\(Int(interaction.frameSize.width))×\(Int(interaction.frameSize.height))")
+                            Text("\(Int(frameSize.width))×\(Int(frameSize.height))")
                                 .font(.system(size: 11, weight: .medium, design: .monospaced))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 8)
@@ -305,8 +307,8 @@ struct CropFrameOverlay: View {
         let scaleX = containerSize.width / videoSize.width
         let scaleY = containerSize.height / videoSize.height
 
-        let frameWidth = interaction.frameSize.width * scaleX
-        let frameHeight = interaction.frameSize.height * scaleY
+        let frameWidth = frameSize.width * scaleX
+        let frameHeight = frameSize.height * scaleY
 
         let centerX = interaction.position.x * containerSize.width
         let centerY = interaction.position.y * containerSize.height

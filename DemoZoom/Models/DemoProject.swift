@@ -30,7 +30,7 @@ class DemoProject: ObservableObject {
             timestamp: time,
             position: position,
             zoomLevel: 2.0,  // Default 200% zoom
-            frameSize: defaultFrameSize.width > 0 ? defaultFrameSize : videoSize
+            transitionDuration: 0.8
         )
 
         interactions.append(newInteraction)
@@ -38,15 +38,18 @@ class DemoProject: ObservableObject {
         selectedInteractionID = newInteraction.id
     }
 
-    func updateInteraction(id: UUID, zoomLevel: Double? = nil, frameSize: CGSize? = nil, transitionDuration: Double? = nil) {
+    func updateInteraction(id: UUID, zoomLevel: Double? = nil, position: CGPoint? = nil, transitionDuration: Double? = nil) {
         guard let index = interactions.firstIndex(where: { $0.id == id }) else { return }
 
         if let zoomLevel = zoomLevel {
             interactions[index].zoomLevel = max(1.0, min(3.0, zoomLevel))  // 100% to 300%
         }
 
-        if let frameSize = frameSize {
-            interactions[index].frameSize = frameSize
+        if let position = position {
+            interactions[index].position = CGPoint(
+                x: max(0, min(1, position.x)),
+                y: max(0, min(1, position.y))
+            )
         }
 
         if let transitionDuration = transitionDuration {
@@ -85,7 +88,6 @@ class DemoProject: ObservableObject {
                 timestamp: .zero,
                 position: CGPoint(x: 0.5, y: 0.5),  // Center
                 zoomLevel: 1.0,  // 100% zoom
-                frameSize: naturalSize,
                 transitionDuration: 0.8
             )
             self.interactions.append(startingKeyframe)

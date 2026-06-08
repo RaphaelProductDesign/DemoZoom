@@ -114,40 +114,54 @@ struct InteractionControls: View {
                 .background(Color(hex: "404040"))
 
             HStack(spacing: 8) {
-                Text("Frame")
+                Text("Position")
                     .font(.system(size: 12))
                     .foregroundColor(Color(hex: "888888"))
 
                 HStack(spacing: 4) {
-                    TextField("W", value: Binding(
-                        get: { Int(interaction.frameSize.width) },
-                        set: { project.updateInteraction(id: interaction.id, frameSize: CGSize(width: CGFloat($0), height: interaction.frameSize.height)) }
-                    ), formatter: NumberFormatter())
+                    Text("X")
+                        .font(.system(size: 11))
+                        .foregroundColor(Color(hex: "666666"))
+
+                    TextField("X", value: Binding(
+                        get: { interaction.position.x },
+                        set: { project.updateInteraction(id: interaction.id, position: CGPoint(x: $0, y: interaction.position.y)) }
+                    ), formatter: {
+                        let f = NumberFormatter()
+                        f.minimumFractionDigits = 2
+                        f.maximumFractionDigits = 2
+                        return f
+                    }())
                     .textFieldStyle(.plain)
-                    .frame(width: 52)
+                    .frame(width: 48)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 4)
                     .background(Color(hex: "2C2C2C"))
                     .cornerRadius(4)
                     .foregroundColor(Color(hex: "F0F0F0"))
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(.system(size: 11, design: .monospaced))
 
-                    Text("×")
-                        .font(.system(size: 12))
-                        .foregroundColor(Color(hex: "555555"))
+                    Text("Y")
+                        .font(.system(size: 11))
+                        .foregroundColor(Color(hex: "666666"))
 
-                    TextField("H", value: Binding(
-                        get: { Int(interaction.frameSize.height) },
-                        set: { project.updateInteraction(id: interaction.id, frameSize: CGSize(width: interaction.frameSize.width, height: CGFloat($0))) }
-                    ), formatter: NumberFormatter())
+                    TextField("Y", value: Binding(
+                        get: { interaction.position.y },
+                        set: { project.updateInteraction(id: interaction.id, position: CGPoint(x: interaction.position.x, y: $0)) }
+                    ), formatter: {
+                        let f = NumberFormatter()
+                        f.minimumFractionDigits = 2
+                        f.maximumFractionDigits = 2
+                        return f
+                    }())
                     .textFieldStyle(.plain)
-                    .frame(width: 52)
+                    .frame(width: 48)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 4)
                     .background(Color(hex: "2C2C2C"))
                     .cornerRadius(4)
                     .foregroundColor(Color(hex: "F0F0F0"))
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(.system(size: 11, design: .monospaced))
                 }
             }
 

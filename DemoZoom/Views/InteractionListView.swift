@@ -155,7 +155,6 @@ struct InteractionRowView: View {
             timestamp: interaction.timestamp,
             position: interaction.position,
             zoomLevel: interaction.zoomLevel,
-            frameSize: interaction.frameSize,
             transitionDuration: interaction.transitionDuration
         )
         project.interactions.append(newInteraction)

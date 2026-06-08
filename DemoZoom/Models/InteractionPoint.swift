@@ -7,7 +7,6 @@ struct InteractionPoint: Identifiable, Codable, Equatable {
     var timestamp: CMTime
     var position: CGPoint
     var zoomLevel: Double
-    var frameSize: CGSize
     var transitionDuration: Double  // 0.4 to 1.5 seconds
 
     init(
@@ -15,19 +14,17 @@ struct InteractionPoint: Identifiable, Codable, Equatable {
         timestamp: CMTime,
         position: CGPoint,
         zoomLevel: Double = 2.0,  // Default 200%
-        frameSize: CGSize,
         transitionDuration: Double = 0.8  // Default 0.8s
     ) {
         self.id = id
         self.timestamp = timestamp
         self.position = position
         self.zoomLevel = zoomLevel
-        self.frameSize = frameSize
         self.transitionDuration = transitionDuration
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, position, zoomLevel, frameSize, transitionDuration
+        case id, position, zoomLevel, transitionDuration
         case timestampSeconds
     }
 
@@ -38,7 +35,6 @@ struct InteractionPoint: Identifiable, Codable, Equatable {
         timestamp = CMTime(seconds: seconds, preferredTimescale: 600)
         position = try container.decode(CGPoint.self, forKey: .position)
         zoomLevel = try container.decode(Double.self, forKey: .zoomLevel)
-        frameSize = try container.decode(CGSize.self, forKey: .frameSize)
         transitionDuration = try container.decodeIfPresent(Double.self, forKey: .transitionDuration) ?? 0.8
     }
 
@@ -48,7 +44,6 @@ struct InteractionPoint: Identifiable, Codable, Equatable {
         try container.encode(timestamp.seconds, forKey: .timestampSeconds)
         try container.encode(position, forKey: .position)
         try container.encode(zoomLevel, forKey: .zoomLevel)
-        try container.encode(frameSize, forKey: .frameSize)
         try container.encode(transitionDuration, forKey: .transitionDuration)
     }
 
@@ -57,7 +52,6 @@ struct InteractionPoint: Identifiable, Codable, Equatable {
         lhs.timestamp.seconds == rhs.timestamp.seconds &&
         lhs.position == rhs.position &&
         lhs.zoomLevel == rhs.zoomLevel &&
-        lhs.frameSize == rhs.frameSize &&
         lhs.transitionDuration == rhs.transitionDuration
     }
 }
