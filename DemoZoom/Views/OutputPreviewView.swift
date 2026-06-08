@@ -68,6 +68,9 @@ struct OutputPreviewView: View {
                             VideoPlayerViewWrapper(player: player)
                                 .frame(width: previewSize.width, height: previewSize.height)
                                 .overlay(
+                                    centerCrosshair(for: previewSize)
+                                )
+                                .overlay(
                                     resizeHandles(for: previewSize)
                                 )
                         }
@@ -107,6 +110,29 @@ struct OutputPreviewView: View {
         .onChange(of: project.defaultFrameSize) { _ in
             updateComposition()
         }
+    }
+
+    private func centerCrosshair(for frameSize: CGSize) -> some View {
+        ZStack {
+            // Horizontal line
+            Rectangle()
+                .fill(Color(hex: "0A84FF").opacity(0.5))
+                .frame(width: 20, height: 1)
+                .position(x: frameSize.width / 2, y: frameSize.height / 2)
+
+            // Vertical line
+            Rectangle()
+                .fill(Color(hex: "0A84FF").opacity(0.5))
+                .frame(width: 1, height: 20)
+                .position(x: frameSize.width / 2, y: frameSize.height / 2)
+
+            // Center dot
+            Circle()
+                .fill(Color(hex: "0A84FF"))
+                .frame(width: 4, height: 4)
+                .position(x: frameSize.width / 2, y: frameSize.height / 2)
+        }
+        .opacity(project.selectedInteractionID != nil ? 0.8 : 0.3)
     }
 
     private func resizeHandles(for frameSize: CGSize) -> some View {
