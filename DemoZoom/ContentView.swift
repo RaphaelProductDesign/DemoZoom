@@ -16,7 +16,18 @@ struct ContentView: View {
                     .frame(width: 220)
 
                 if project.videoURL != nil {
-                    VideoEditorView(project: project)
+                    HStack(spacing: 0) {
+                        // Left: Source video for managing keyframes
+                        SourceVideoView(project: project)
+                            .frame(maxWidth: .infinity)
+
+                        Divider()
+                            .background(Color(hex: "333333"))
+
+                        // Right: Live output preview with zoom effects
+                        OutputPreviewView(project: project)
+                            .frame(maxWidth: .infinity)
+                    }
                 } else {
                     emptyState
                 }
@@ -60,49 +71,31 @@ struct ContentView: View {
 
     private var toolbar: some View {
         HStack(spacing: 12) {
-            Text("DemoZoom")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundColor(Color(hex: "F0F0F0"))
+            HStack(spacing: 12) {
+                Text("DemoZoom")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Color(hex: "F0F0F0"))
 
-            if project.videoURL != nil {
-                Divider()
-                    .frame(height: 20)
-                    .background(Color(hex: "404040"))
+                if project.videoURL != nil {
+                    Divider()
+                        .frame(height: 20)
+                        .background(Color(hex: "404040"))
 
-                HStack(spacing: 6) {
-                    Text("Frame")
-                        .font(.system(size: 11))
+                    Text("Source Video")
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundColor(Color(hex: "888888"))
 
-                    TextField("W", value: Binding(
-                        get: { Int(project.defaultFrameSize.width) },
-                        set: { project.defaultFrameSize.width = CGFloat($0) }
-                    ), formatter: NumberFormatter())
-                    .textFieldStyle(.plain)
-                    .frame(width: 45)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(Color(hex: "2C2C2C"))
-                    .cornerRadius(4)
-                    .foregroundColor(Color(hex: "F0F0F0"))
-                    .font(.system(size: 11, design: .monospaced))
+                    Spacer()
 
-                    Text("×")
-                        .font(.system(size: 11))
-                        .foregroundColor(Color(hex: "555555"))
+                    Divider()
+                        .frame(height: 20)
+                        .background(Color(hex: "404040"))
 
-                    TextField("H", value: Binding(
-                        get: { Int(project.defaultFrameSize.height) },
-                        set: { project.defaultFrameSize.height = CGFloat($0) }
-                    ), formatter: NumberFormatter())
-                    .textFieldStyle(.plain)
-                    .frame(width: 45)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(Color(hex: "2C2C2C"))
-                    .cornerRadius(4)
-                    .foregroundColor(Color(hex: "F0F0F0"))
-                    .font(.system(size: 11, design: .monospaced))
+                    Text("Output Preview")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(Color(hex: "888888"))
+                } else {
+                    Spacer()
                 }
             }
 
