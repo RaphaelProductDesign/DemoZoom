@@ -150,12 +150,10 @@ class ZoomInstruction: NSObject, AVVideoCompositionInstructionProtocol {
         let centerX = center.x * videoSize.width
         let centerY = center.y * videoSize.height
 
-        var cropX = centerX - sourceCropWidth / 2
-        var cropY = centerY - sourceCropHeight / 2
-
-        // Clamp to video bounds
-        cropX = max(0, min(cropX, videoSize.width - sourceCropWidth))
-        cropY = max(0, min(cropY, videoSize.height - sourceCropHeight))
+        // ALWAYS center on position - no clamping
+        // If crop goes out of bounds, compositor will show black/letterbox
+        let cropX = centerX - sourceCropWidth / 2
+        let cropY = centerY - sourceCropHeight / 2
 
         return CGRect(x: cropX, y: cropY, width: sourceCropWidth, height: sourceCropHeight)
     }
