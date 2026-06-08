@@ -79,6 +79,17 @@ class DemoProject: ObservableObject {
             self.interactions = []
             self.currentTime = .zero
             self.selectedInteractionID = nil
+
+            // Add starting keyframe at 0:00, centered, 100% zoom
+            let startingKeyframe = InteractionPoint(
+                timestamp: .zero,
+                position: CGPoint(x: 0.5, y: 0.5),  // Center
+                zoomLevel: 1.0,  // 100% zoom
+                frameSize: naturalSize,
+                transitionDuration: 0.8
+            )
+            self.interactions.append(startingKeyframe)
+            self.selectedInteractionID = startingKeyframe.id
         }
     }
 }
