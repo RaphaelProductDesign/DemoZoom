@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import CoreGraphics
+import SwiftUI
 
 class DemoProject: ObservableObject {
     @Published var videoURL: URL?
@@ -11,6 +12,7 @@ class DemoProject: ObservableObject {
     @Published var selectedInteractionID: UUID?
     @Published var isPlaying: Bool = false
     @Published var defaultFrameSize: CGSize = .zero  // Default frame size for new keyframes
+    @Published var backgroundColor: Color = Color(red: 1.0, green: 0.92, blue: 0.23)  // Default yellow #FFEB3B
 
     var canAddInteraction: Bool {
         interactions.count < 10

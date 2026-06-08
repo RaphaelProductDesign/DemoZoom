@@ -94,6 +94,20 @@ struct ContentView: View {
                     Text("Output Preview")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundColor(Color(hex: "888888"))
+
+                    Divider()
+                        .frame(height: 20)
+                        .background(Color(hex: "404040"))
+
+                    HStack(spacing: 6) {
+                        Text("BG")
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: "888888"))
+
+                        ColorPicker("", selection: $project.backgroundColor)
+                            .labelsHidden()
+                            .frame(width: 40)
+                    }
                 } else {
                     Spacer()
                 }

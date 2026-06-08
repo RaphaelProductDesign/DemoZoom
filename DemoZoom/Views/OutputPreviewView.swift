@@ -286,7 +286,8 @@ struct OutputPreviewView: View {
                 let composition = try await processor.generateComposition(
                     for: asset,
                     interactions: project.interactions,
-                    videoSize: project.videoSize
+                    videoSize: project.videoSize,
+                    backgroundColor: project.backgroundColor
                 )
 
                 await MainActor.run {

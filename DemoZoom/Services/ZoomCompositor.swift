@@ -1,6 +1,7 @@
 import AVFoundation
 import CoreImage
 import CoreMedia
+import SwiftUI
 
 class ZoomCompositor: NSObject, AVVideoCompositing {
     private let renderQueue = DispatchQueue(label: "com.demozoom.compositor")
@@ -30,25 +31,51 @@ class ZoomCompositor: NSObject, AVVideoCompositing {
                 return
             }
 
-            let time = request.compositionTime
-            let cropRect = instruction.cropRect(at: time)
-
-            let sourceImage = CIImage(cvPixelBuffer: sourceBuffer)
-            let croppedImage = sourceImage.cropped(to: cropRect)
-
-            let scaleX = instruction.videoSize.width / cropRect.width
-            let scaleY = instruction.videoSize.height / cropRect.height
-            let translateX = -cropRect.origin.x * scaleX
-            let translateY = -cropRect.origin.y * scaleY
-
-            let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
-                .concatenating(CGAffineTransform(translationX: translateX, y: translateY))
-
-            let finalImage = croppedImage.transformed(by: transform)
-
             guard let outputBuffer = request.renderContext.newPixelBuffer() else {
                 request.finish(with: NSError(domain: "DemoZoom", code: 8, userInfo: nil))
                 return
+            }
+
+            let time = request.compositionTime
+            let cropRect = instruction.cropRect(at: time)
+
+            // Create background color layer
+            let backgroundColor = instruction.backgroundColor
+            let backgroundImage = CIImage(color: backgroundColor)
+                .cropped(to: CGRect(origin: .zero, size: instruction.videoSize))
+
+            // Get source video and handle out-of-bounds crop
+            let sourceImage = CIImage(cvPixelBuffer: sourceBuffer)
+
+            // Calculate the intersection of crop with video bounds
+            let videoBounds = CGRect(origin: .zero, size: instruction.videoSize)
+            let validCropRect = cropRect.intersection(videoBounds)
+
+            var finalImage: CIImage
+
+            if validCropRect.isEmpty {
+                // Completely out of bounds - show only background
+                finalImage = backgroundImage
+            } else {
+                // Crop the valid portion
+                let croppedImage = sourceImage.cropped(to: validCropRect)
+
+                // Scale and position
+                let scaleX = instruction.videoSize.width / cropRect.width
+                let scaleY = instruction.videoSize.height / cropRect.height
+
+                // Calculate where this cropped portion should appear in output
+                let offsetX = (validCropRect.origin.x - cropRect.origin.x) * scaleX
+                let offsetY = (validCropRect.origin.y - cropRect.origin.y) * scaleY
+
+                let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
+                    .concatenating(CGAffineTransform(translationX: -validCropRect.origin.x * scaleX + offsetX,
+                                                     y: -validCropRect.origin.y * scaleY + offsetY))
+
+                let scaledImage = croppedImage.transformed(by: transform)
+
+                // Composite video over background
+                finalImage = scaledImage.composited(over: backgroundImage)
             }
 
             self.renderContext.render(finalImage, to: outputBuffer)
@@ -61,15 +88,19 @@ class ZoomInstruction: NSObject, AVVideoCompositionInstructionProtocol {
     let timeRange: CMTimeRange
     let interactions: [InteractionPoint]
     let videoSize: CGSize
+    let backgroundColor: CIColor
     let enablePostProcessing = false
     let containsTweening = true
     let requiredSourceTrackIDs: [NSValue]?
     let passthroughTrackID: CMPersistentTrackID = kCMPersistentTrackID_Invalid
 
-    init(timeRange: CMTimeRange, interactions: [InteractionPoint], videoSize: CGSize, trackID: CMPersistentTrackID) {
+    init(timeRange: CMTimeRange, interactions: [InteractionPoint], videoSize: CGSize, trackID: CMPersistentTrackID, backgroundColor: Color) {
         self.timeRange = timeRange
         self.interactions = interactions.sorted { $0.timestamp.seconds < $1.timestamp.seconds }
         self.videoSize = videoSize
+        // Convert SwiftUI Color to CIColor
+        let nsColor = NSColor(backgroundColor)
+        self.backgroundColor = CIColor(color: nsColor) ?? CIColor(red: 1.0, green: 0.92, blue: 0.23, alpha: 1.0)
         self.requiredSourceTrackIDs = [NSNumber(value: trackID)]
         super.init()
     }

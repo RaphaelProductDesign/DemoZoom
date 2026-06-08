@@ -1,12 +1,14 @@
 import Foundation
 import AVFoundation
 import CoreMedia
+import SwiftUI
 
 class VideoProcessor {
     func generateComposition(
         for asset: AVAsset,
         interactions: [InteractionPoint],
-        videoSize: CGSize
+        videoSize: CGSize,
+        backgroundColor: Color = Color(red: 1.0, green: 0.92, blue: 0.23)
     ) async throws -> AVVideoComposition {
         let tracks = try await asset.loadTracks(withMediaType: .video)
         guard let videoTrack = tracks.first else {
@@ -26,7 +28,8 @@ class VideoProcessor {
             timeRange: CMTimeRange(start: .zero, duration: duration),
             interactions: interactions,
             videoSize: naturalSize,
-            trackID: trackID
+            trackID: trackID,
+            backgroundColor: backgroundColor
         )
 
         composition.instructions = [instruction]
