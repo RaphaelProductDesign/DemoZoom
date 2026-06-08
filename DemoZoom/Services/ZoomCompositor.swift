@@ -44,39 +44,27 @@ class ZoomCompositor: NSObject, AVVideoCompositing {
             let backgroundImage = CIImage(color: backgroundColor)
                 .cropped(to: CGRect(origin: .zero, size: instruction.videoSize))
 
-            // Get source video and handle out-of-bounds crop
+            // Get source video
             let sourceImage = CIImage(cvPixelBuffer: sourceBuffer)
 
-            // Calculate the intersection of crop with video bounds
-            let videoBounds = CGRect(origin: .zero, size: instruction.videoSize)
-            let validCropRect = cropRect.intersection(videoBounds)
+            // Extend source image with background to handle out-of-bounds crops
+            // Create an infinite extent background and composite video on it
+            let extendedSource = sourceImage.composited(over: CIImage(color: backgroundColor))
 
-            var finalImage: CIImage
+            // Crop from the extended source (can go out of original video bounds)
+            let croppedImage = extendedSource.cropped(to: cropRect)
 
-            if validCropRect.isEmpty {
-                // Completely out of bounds - show only background
-                finalImage = backgroundImage
-            } else {
-                // Crop the valid portion
-                let croppedImage = sourceImage.cropped(to: validCropRect)
+            // Scale to fill output
+            let scaleX = instruction.videoSize.width / cropRect.width
+            let scaleY = instruction.videoSize.height / cropRect.height
+            let translateX = -cropRect.origin.x * scaleX
+            let translateY = -cropRect.origin.y * scaleY
 
-                // Scale and position
-                let scaleX = instruction.videoSize.width / cropRect.width
-                let scaleY = instruction.videoSize.height / cropRect.height
+            let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
+                .concatenating(CGAffineTransform(translationX: translateX, y: translateY))
 
-                // Calculate where this cropped portion should appear in output
-                let offsetX = (validCropRect.origin.x - cropRect.origin.x) * scaleX
-                let offsetY = (validCropRect.origin.y - cropRect.origin.y) * scaleY
-
-                let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
-                    .concatenating(CGAffineTransform(translationX: -validCropRect.origin.x * scaleX + offsetX,
-                                                     y: -validCropRect.origin.y * scaleY + offsetY))
-
-                let scaledImage = croppedImage.transformed(by: transform)
-
-                // Composite video over background
-                finalImage = scaledImage.composited(over: backgroundImage)
-            }
+            let finalImage = croppedImage.transformed(by: transform)
+                .cropped(to: CGRect(origin: .zero, size: instruction.videoSize))
 
             self.renderContext.render(finalImage, to: outputBuffer)
             request.finish(withComposedVideoFrame: outputBuffer)
